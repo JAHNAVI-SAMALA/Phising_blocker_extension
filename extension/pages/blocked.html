@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhishGuard — Dangerous Site Blocked</title>
+<meta name="description" content="PhishGuard AI has blocked this site because it appears to be a phishing attempt.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #08080f;
+    --card: rgba(18,18,28,0.85);
+    --border: rgba(255,45,85,0.15);
+    --border2: rgba(255,255,255,0.06);
+    --red: #ff2d55;
+    --red-dark: #cc1a38;
+    --orange: #ff9500;
+    --green: #30d158;
+    --text: #e8e8f5;
+    --muted: #7070a0;
+  }
+
+  html, body {
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ── Animated background ── */
+  .bg-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .bg-canvas::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(255,45,85,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 10% 90%, rgba(255,45,85,0.06) 0%, transparent 50%);
+  }
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,45,85,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,45,85,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at 50% 0%, black 20%, transparent 70%);
+  }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--red);
+    opacity: 0;
+    animation: float-up linear infinite;
+  }
+  @keyframes float-up {
+    0%   { opacity: 0; transform: translateY(0) scale(0); }
+    10%  { opacity: 0.6; transform: translateY(-10px) scale(1); }
+    90%  { opacity: 0.2; }
+    100% { opacity: 0; transform: translateY(-120px) scale(0.5); }
+  }
+
+  /* ── Main layout ── */
+  .page {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .container {
+    max-width: 580px;
+    width: 100%;
+  }
+
+  /* ── Shield ── */
+  .shield-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .shield-outer {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    background: rgba(255,45,85,0.08);
+    border: 1px solid rgba(255,45,85,0.25);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    animation: shield-pulse 3s ease-in-out infinite;
+  }
+  .shield-outer::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: rgba(255,45,85,0.05);
+    border: 1px solid rgba(255,45,85,0.1);
+    animation: shield-pulse 3s ease-in-out infinite 0.4s;
+  }
+  .shield-outer::after {
+    content: '';
+    position: absolute;
+    inset: -18px;
+    border-radius: 50%;
+    background: rgba(255,45,85,0.02);
+    border: 1px solid rgba(255,45,85,0.07);
+    animation: shield-pulse 3s ease-in-out infinite 0.8s;
+  }
+  .shield-icon { font-size: 42px; position: relative; z-index: 2; }
+  @keyframes shield-pulse {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
+  }
+
+  /* ── Heading ── */
+  .heading { text-align: center; margin-bottom: 28px; }
+  .heading h1 {
+    font-size: 32px; font-weight: 900; color: var(--red);
+    letter-spacing: -0.5px; margin-bottom: 10px;
+    text-shadow: 0 0 40px rgba(255,45,85,0.4);
+  }
+  .heading .subtitle {
+    font-size: 16px; color: var(--muted); line-height: 1.6;
+  }
+
+  /* ── Risk badge ── */
+  .risk-wrap {
+    display: flex; justify-content: center; gap: 10px;
+    margin-bottom: 22px; flex-wrap: wrap;
+  }
+  .risk-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 20px; border-radius: 10px;
+    font-size: 13px; font-weight: 800; letter-spacing: 0.5px;
+  }
+  .risk-CRITICAL { background: rgba(255,45,85,0.15); color: var(--red); border: 1px solid rgba(255,45,85,0.3); }
+  .risk-HIGH     { background: rgba(255,45,85,0.12); color: var(--red); border: 1px solid rgba(255,45,85,0.25); }
+  .risk-MEDIUM   { background: rgba(255,149,0,0.12); color: var(--orange); border: 1px solid rgba(255,149,0,0.25); }
+  .source-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 8px 16px; border-radius: 10px;
+    font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border2);
+    color: var(--muted);
+  }
+
+  /* ── URL card ── */
+  .url-card {
+    background: var(--card);
+    border: 1px solid rgba(255,45,85,0.2);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(12px);
+  }
+  .url-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .url-text {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12px; color: rgba(255,100,130,0.9);
+    word-break: break-all; line-height: 1.6;
+  }
+
+  /* ── Confidence bar ── */
+  .conf-section { margin-bottom: 4px; }
+  .conf-header {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--muted); margin-bottom: 7px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .conf-track {
+    height: 6px; background: rgba(255,255,255,0.06);
+    border-radius: 3px; overflow: hidden;
+  }
+  .conf-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--red-dark), var(--red));
+    box-shadow: 0 0 8px rgba(255,45,85,0.4);
+    transition: width 1s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── Risk factors ── */
+  .factors-card {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(12px);
+  }
+  .factors-title {
+    font-size: 10px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--muted); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .factor {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px; color: rgba(255,110,130,0.9); line-height: 1.5;
+  }
+  .factor:last-child { border-bottom: none; }
+  .factor-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); flex-shrink: 0; margin-top: 5px; }
+
+  /* ── Community reports card ── */
+  .community-card {
+    background: rgba(255,45,85,0.05);
+    border: 1px solid rgba(255,45,85,0.15);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(12px);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .community-num { font-size: 28px; font-weight: 900; color: var(--red); flex-shrink: 0; }
+  .community-text .title { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+  .community-text .desc  { font-size: 11px; color: var(--muted); }
+
+  /* ── Expandable "Why blocked?" ── */
+  .why-section { margin-bottom: 16px; }
+  .why-toggle {
+    background: none; border: 1px solid var(--border2); border-radius: 10px;
+    color: var(--muted); font-size: 12px; font-weight: 600;
+    padding: 9px 16px; cursor: pointer; width: 100%;
+    font-family: inherit; display: flex; align-items: center; justify-content: space-between;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .why-toggle:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
+  .why-arrow { transition: transform 0.25s; }
+  .why-toggle.open .why-arrow { transform: rotate(180deg); }
+  .why-body {
+    display: none;
+    background: var(--card); border: 1px solid var(--border2); border-top: none;
+    border-radius: 0 0 10px 10px; padding: 14px 16px;
+    font-size: 12px; color: var(--muted); line-height: 1.8;
+    backdrop-filter: blur(12px);
+  }
+  .why-body.open { display: block; }
+  .why-point { margin-bottom: 6px; padding-left: 14px; position: relative; }
+  .why-point::before { content: '›'; position: absolute; left: 0; color: var(--red); font-weight: 700; }
+
+  /* ── Action buttons ── */
+  .actions { display: flex; gap: 12px; }
+  .btn-back {
+    flex: 2; padding: 15px 20px;
+    background: linear-gradient(135deg, var(--red-dark), var(--red));
+    color: #fff; border: none; border-radius: 13px;
+    font-size: 15px; font-weight: 800; cursor: pointer;
+    font-family: inherit; letter-spacing: -0.2px;
+    box-shadow: 0 4px 20px rgba(255,45,85,0.4);
+    transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+  }
+  .btn-back:hover { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 6px 24px rgba(255,45,85,0.5); }
+  .btn-back:active { transform: none; }
+
+  .btn-proceed {
+    flex: 1; padding: 15px 16px;
+    background: transparent; color: var(--muted);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 13px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: inherit; position: relative;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-proceed:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+  .btn-proceed:disabled { cursor: not-allowed; opacity: 0.6; }
+  .countdown {
+    font-size: 9px; font-weight: 800; display: block; margin-top: 2px;
+    color: var(--muted); letter-spacing: 0.5px;
+  }
+
+  /* ── Footer brand ── */
+  .brand-footer {
+    text-align: center; margin-top: 32px;
+    font-size: 11px; color: var(--muted2, #3a3a60);
+  }
+  .brand-footer span { color: var(--muted); font-weight: 600; }
+
+  @media (max-width: 480px) {
+    .heading h1 { font-size: 24px; }
+    .actions { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Animated background ── -->
+<div class="bg-canvas">
+  <div class="bg-grid"></div>
+  <div id="particles"></div>
+</div>
+
+<div class="page">
+  <div class="container">
+
+    <!-- Shield -->
+    <div class="shield-wrap">
+      <div class="shield-outer">
+        <div class="shield-icon">🛡️</div>
+      </div>
+    </div>
+
+    <!-- Heading -->
+    <div class="heading">
+      <h1>Phishing Site Blocked</h1>
+      <p class="subtitle">PhishGuard AI detected this site as a <strong style="color:var(--red)">credential-stealing attack</strong>.<br>Your data and accounts are safe.</p>
+    </div>
+
+    <!-- Risk badges -->
+    <div class="risk-wrap">
+      <span class="risk-badge" id="risk-badge">HIGH RISK</span>
+      <span class="source-badge" id="source-badge">🤖 ML Model</span>
+    </div>
+
+    <!-- Blocked URL -->
+    <div class="url-card">
+      <div class="url-label">🔗 Blocked URL</div>
+      <div class="url-text" id="blocked-url">Loading…</div>
+    </div>
+
+    <!-- Confidence bar -->
+    <div class="factors-card conf-section">
+      <div class="conf-header">
+        <span>Threat Confidence</span>
+        <span id="conf-text">0%</span>
+      </div>
+      <div class="conf-track">
+        <div class="conf-fill" id="conf-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Community reports (hidden unless present) -->
+    <div class="community-card" id="community-card" style="display:none">
+      <div class="community-num" id="community-num">0</div>
+      <div class="community-text">
+        <div class="title">Community Reports</div>
+        <div class="desc">Other PhishGuard users flagged this domain</div>
+      </div>
+    </div>
+
+    <!-- Risk factors -->
+    <div class="factors-card" id="factors-card" style="display:none">
+      <div class="factors-title">🚩 Why This Site Was Blocked</div>
+      <div id="factors-list"></div>
+    </div>
+
+    <!-- Why blocked expandable -->
+    <div class="why-section">
+      <button class="why-toggle" id="why-toggle">
+        <span>❓ How does PhishGuard detect phishing?</span>
+        <span class="why-arrow">▼</span>
+      </button>
+      <div class="why-body" id="why-body">
+        <div class="why-point">Analyzes <strong>87 URL and page features</strong> with a GradientBoosting ML model trained on 11,000+ URLs</div>
+        <div class="why-point">Checks <strong>real WHOIS data</strong> to detect newly registered domains (common in phishing)</div>
+        <div class="why-point">Validates <strong>SSL certificates</strong> and DNS records</div>
+        <div class="why-point">Detects <strong>brand impersonation</strong>, fake login forms, and credential-harvesting scripts</div>
+        <div class="why-point">Cross-references a <strong>community-reported threat database</strong> updated in real time</div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="actions">
+      <button class="btn-back" id="btn-back">← Take Me to Safety</button>
+      <button class="btn-proceed" id="btn-proceed" disabled>
+        Proceed Anyway
+        <span class="countdown" id="countdown-text">(wait 5s)</span>
+      </button>
+    </div>
+
+    <!-- Brand footer -->
+    <div class="brand-footer">Protected by <span>PhishGuard AI v3.0</span> &mdash; ML-powered phishing detection</div>
+
+  </div>
+</div>
+
+<script src="blocked.js"></script>
+</body>
+</html>

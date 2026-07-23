@@ -1,0 +1,93 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# Environment Variables
+.env
+.env.*
+
+# ===========================
+# Flask
+# ===========================
+instance/
+.webassets-cache/
+
+# ===========================
+# Database
+# ===========================
+*.db
+*.sqlite
+*.sqlite3
+
+# ===========================
+# Machine Learning
+# ===========================
+*.joblib
+*.h5
+*.ckpt
+
+# Ignore models ONLY if they can be regenerated
+# If your model is required to run the project,
+# comment this line.
+# *.pkl
+
+# ===========================
+# Logs
+# ===========================
+logs/
+*.log
+
+# ===========================
+# OS Files
+# ===========================
+.DS_Store
+Thumbs.db
+
+# ===========================
+# VS Code
+# ===========================
+.vscode/
+
+# ===========================
+# Pytest
+# ===========================
+.pytest_cache/
+
+# ===========================
+# Mypy
+# ===========================
+.mypy_cache/
+
+# ===========================
+# Coverage
+# ===========================
+.coverage
+htmlcov/
+
+# ===========================
+# Build
+# ===========================
+build/
+dist/
+*.egg-info/
+
+# ===========================
+# Jupyter
+# ===========================
+.ipynb_checkpoints/
+
+# ===========================
+# Temporary files
+# ===========================
+*.tmp
+*.bak
+*.swp

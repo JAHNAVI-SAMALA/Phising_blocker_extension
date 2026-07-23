@@ -1,8 +1,8 @@
 // PhishGuard AI — Background Service Worker v3.1
 // Handles: URL interception, ML analysis, blocking, caching, badge, SSE proxy
 
-const API_BASE = 'http://localhost:5000';
-const API_URL  = `${API_BASE}/analyze`;
+const API_BASE = 'https://phishguard-backend-517z.onrender.com';
+const API_URL = `${API_BASE}/analyze`;
 
 // ── In-memory cache: url → { result, intel } ──────────────────────────────
 const cache = new Map();
@@ -69,7 +69,7 @@ async function incrementScanCount() {
     chrome.storage.local.set({
       scan_count: (data.scan_count || 0) + 1
     });
-  } catch (_) {}
+  } catch (_) { }
 }
 
 async function incrementThreatsBlocked() {
@@ -78,7 +78,7 @@ async function incrementThreatsBlocked() {
     chrome.storage.local.set({
       threats_blocked: (data.threats_blocked || 0) + 1
     });
-  } catch (_) {}
+  } catch (_) { }
 }
 
 // ── Handle messages from content script and popup ─────────────────────────
@@ -116,9 +116,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: msg.url, page_content: msg.content || '' })
     })
-    .then(r => r.json())
-    .then(data => sendResponse({ success: true, data }))
-    .catch(err => sendResponse({ success: false, error: err.message }));
+      .then(r => r.json())
+      .then(data => sendResponse({ success: true, data }))
+      .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
   }
 
@@ -140,7 +140,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   // pages cannot fetch http://localhost (Mixed Content). Service
   // worker has no such restriction.
   if (msg.type === 'SCAN_EMAIL') {
-    const ctrl    = new AbortController();
+    const ctrl = new AbortController();
     const timeout = setTimeout(() => ctrl.abort(), 20000);
     fetch(`${API_BASE}/scan-email`, {
       method: 'POST',
@@ -148,21 +148,21 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       signal: ctrl.signal,
       body: JSON.stringify({
         subject: msg.subject || '',
-        sender:  msg.sender  || '',
-        body:    (msg.body   || '').slice(0, 4000),
-        links:   (msg.links  || []).slice(0, 5)
+        sender: msg.sender || '',
+        body: (msg.body || '').slice(0, 4000),
+        links: (msg.links || []).slice(0, 5)
       })
     })
-    .then(r => r.json())
-    .then(data => { clearTimeout(timeout); sendResponse(data); })
-    .catch(err => {
-      clearTimeout(timeout);
-      sendResponse({
-        error: err.message, verdict: 'SAFE', findings: [],
-        links_analyzed: [], risk_score: 0, suspicious_links_count: 0,
-        summary: 'Backend offline or scan timed out.'
+      .then(r => r.json())
+      .then(data => { clearTimeout(timeout); sendResponse(data); })
+      .catch(err => {
+        clearTimeout(timeout);
+        sendResponse({
+          error: err.message, verdict: 'SAFE', findings: [],
+          links_analyzed: [], risk_score: 0, suspicious_links_count: 0,
+          summary: 'Backend offline or scan timed out.'
+        });
       });
-    });
     return true;
   }
 });
@@ -182,9 +182,9 @@ function updateBadge(tabId, result) {
   if (!result) return;
   if (result.is_phishing) {
     const color = (result.risk_level === 'CRITICAL' || result.risk_level === 'HIGH')
-                ? '#ff2d55'
-                : '#ff9500';
-    const text  = result.risk_level === 'CRITICAL' ? 'CRIT' : '!';
+      ? '#ff2d55'
+      : '#ff9500';
+    const text = result.risk_level === 'CRITICAL' ? 'CRIT' : '!';
     chrome.action.setBadgeText({ tabId, text });
     chrome.action.setBadgeBackgroundColor({ tabId, color });
     chrome.action.setTitle({ tabId, title: `⚠️ PhishGuard: ${result.risk_level} RISK — Click for details` });
@@ -197,12 +197,12 @@ function updateBadge(tabId, result) {
 
 // ── Block tab ──────────────────────────────────────────────────────────────
 function blockTab(tabId, url, result) {
-  const encoded    = encodeURIComponent(url);
-  const risk       = encodeURIComponent(result.risk_level);
+  const encoded = encodeURIComponent(url);
+  const risk = encodeURIComponent(result.risk_level);
   const confidence = encodeURIComponent(result.confidence);
-  const factors    = encodeURIComponent(JSON.stringify(result.risk_factors || []));
-  const source     = encodeURIComponent(result.source || 'ml_model');
-  const reports    = encodeURIComponent(result.community_reports || 0);
+  const factors = encodeURIComponent(JSON.stringify(result.risk_factors || []));
+  const source = encodeURIComponent(result.source || 'ml_model');
+  const reports = encodeURIComponent(result.community_reports || 0);
 
   chrome.tabs.update(tabId, {
     url: chrome.runtime.getURL(

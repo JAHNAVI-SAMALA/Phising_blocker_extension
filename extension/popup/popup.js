@@ -1,13 +1,13 @@
 // popup.js — PhishGuard AI v3.1
 // Separate file required by Chrome MV3 Content Security Policy
 
-const BACKEND_URL = 'http://localhost:5000';
+const BACKEND_URL = 'https://phishguard-backend-517z.onrender.com';
 
-let currentURL     = '';
-let currentResult  = null;
-let currentIntel   = null;
+let currentURL = '';
+let currentResult = null;
+let currentIntel = null;
 let communityAlerts = [];
-let lastAlertSince  = new Date(0).toISOString();
+let lastAlertSince = new Date(0).toISOString();
 
 // ── Tab switching ──────────────────────────────────────────────────────────
 document.querySelectorAll('.tab').forEach(tab => {
@@ -80,7 +80,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
   // Check cache first
   chrome.runtime.sendMessage({ type: 'GET_RESULT', url: currentURL }, res => {
     currentResult = res?.result || null;
-    currentIntel  = res?.intel  || null;
+    currentIntel = res?.intel || null;
 
     if (currentResult) {
       renderScanPanel(currentResult, currentURL);
@@ -91,10 +91,10 @@ chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: currentURL, page_content: '' })
       })
-      .then(r => r.json())
-      .then(result => { currentResult = result; renderScanPanel(result, currentURL); })
-      .catch(() => {
-        document.getElementById('scan-content').innerHTML = `
+        .then(r => r.json())
+        .then(result => { currentResult = result; renderScanPanel(result, currentURL); })
+        .catch(() => {
+          document.getElementById('scan-content').innerHTML = `
           <div class="site-status loading">
             <span class="status-icon">⚠️</span>
             <div class="status-info">
@@ -102,7 +102,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
               <div class="status-desc">Start the Python backend: <code>python app.py</code></div>
             </div>
           </div>`;
-      });
+        });
     } else {
       document.getElementById('scan-content').innerHTML = `
         <div class="empty-state">
@@ -120,9 +120,9 @@ chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: currentURL, page_content: '' })
       })
-      .then(r => r.json())
-      .then(intel => { currentIntel = intel; renderIntelPanel(intel); })
-      .catch(() => {});
+        .then(r => r.json())
+        .then(intel => { currentIntel = intel; renderIntelPanel(intel); })
+        .catch(() => { });
     } else {
       renderIntelPanel(null);
     }
@@ -133,7 +133,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
 
 // ── Backend health check + footer stats ───────────────────────────────────
 (async function checkHealth() {
-  const dot  = document.getElementById('status-dot');
+  const dot = document.getElementById('status-dot');
   const stat = document.getElementById('footer-stat');
   try {
     const r = await fetch(`${BACKEND_URL}/health`);
@@ -144,23 +144,23 @@ chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
     } else {
       dot.className = 'status-dot';
       const reports = d.community_reports || 0;
-      const threats = d.active_threats    || 0;
+      const threats = d.active_threats || 0;
       stat.textContent = `${reports} reports · ${threats} active threats`;
       if (threats > 0) stat.className = 'footer-stat threat';
-      else             stat.className = 'footer-stat safe';
+      else stat.className = 'footer-stat safe';
     }
     // Load local scan count from storage
     chrome.storage.local.get(['scan_count', 'threats_blocked'], data => {
       if (data.scan_count) {
-        const scans    = data.scan_count || 0;
-        const blocked  = data.threats_blocked || 0;
+        const scans = data.scan_count || 0;
+        const blocked = data.threats_blocked || 0;
         stat.textContent = `${scans} scanned · ${blocked} blocked`;
       }
     });
   } catch {
     dot.className = 'status-dot offline';
     stat.textContent = 'Backend offline';
-    stat.className   = 'footer-stat threat';
+    stat.className = 'footer-stat threat';
   }
 })();
 
@@ -179,13 +179,13 @@ function renderScanPanel(result, scanUrl) {
     return;
   }
 
-  const isPhish   = result.is_phishing;
-  const conf      = result.confidence || 0;
-  const rl        = result.risk_level || (isPhish ? 'HIGH' : 'LOW');
+  const isPhish = result.is_phishing;
+  const conf = result.confidence || 0;
+  const rl = result.risk_level || (isPhish ? 'HIGH' : 'LOW');
   const statusCls = isPhish ? (rl === 'MEDIUM' ? 'suspicious' : 'phishing') : 'safe';
-  const icon      = isPhish ? (rl === 'CRITICAL' ? '🚨' : '⚠️') : '✅';
-  const titleCls  = isPhish ? (rl === 'MEDIUM' ? 'status-suspicious' : 'status-phishing') : 'status-safe';
-  const title     = isPhish
+  const icon = isPhish ? (rl === 'CRITICAL' ? '🚨' : '⚠️') : '✅';
+  const titleCls = isPhish ? (rl === 'MEDIUM' ? 'status-suspicious' : 'status-phishing') : 'status-safe';
+  const title = isPhish
     ? `${rl} Risk — Phishing Detected`
     : 'Site Appears Safe';
   const displayConf = isPhish ? conf : (100 - conf);
@@ -194,14 +194,14 @@ function renderScanPanel(result, scanUrl) {
     : `${(100 - conf).toFixed(0)}% safety confidence. No phishing signals found.`;
   const fillColor = isPhish ? (rl === 'MEDIUM' ? '#ff9500' : '#ff2d55') : '#30d158';
   const fillWidth = isPhish ? conf : (100 - conf);
-  const factors   = (result.risk_factors || []).slice(0, 5);
+  const factors = (result.risk_factors || []).slice(0, 5);
 
   // Source tag
   const sourceTag = result.source === 'community_database'
     ? '<span style="background:rgba(255,45,85,0.15);border:1px solid rgba(255,45,85,0.3);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:#ff6b8a">Community DB</span>'
     : result.source === 'safe_list'
-    ? '<span style="background:rgba(48,209,88,0.1);border:1px solid rgba(48,209,88,0.2);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:#30d158">Trusted Domain</span>'
-    : '<span style="background:rgba(108,99,255,0.12);border:1px solid rgba(108,99,255,0.25);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:#8b7fff">ML Model</span>';
+      ? '<span style="background:rgba(48,209,88,0.1);border:1px solid rgba(48,209,88,0.2);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:#30d158">Trusted Domain</span>'
+      : '<span style="background:rgba(108,99,255,0.12);border:1px solid rgba(108,99,255,0.25);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:#8b7fff">ML Model</span>';
 
   el.innerHTML = `
     <div class="site-status ${statusCls}">
@@ -260,10 +260,10 @@ function renderIntelPanel(intel) {
     return;
   }
 
-  const w       = intel.whois || {};
-  const ssl     = intel.ssl   || {};
-  const pa      = intel.page_analysis || {};
-  const signals = intel.risk_signals  || [];
+  const w = intel.whois || {};
+  const ssl = intel.ssl || {};
+  const pa = intel.page_analysis || {};
+  const signals = intel.risk_signals || [];
   const ageDays = w.domain_age_days;
 
   // Age classification
@@ -273,25 +273,25 @@ function renderIntelPanel(intel) {
 
   el.innerHTML = `
     <div class="section-hdr">🌐 WHOIS & Domain</div>
-    ${row('Domain',     intel.domain || '—', '')}
-    ${row('Created',    w.creation_date || 'Unknown', ageClass)}
+    ${row('Domain', intel.domain || '—', '')}
+    ${row('Created', w.creation_date || 'Unknown', ageClass)}
     ${row('Domain Age', ageDays != null && ageDays >= 0 ? `${ageDays} days` : 'Unknown', ageClass)}
-    ${row('Registrar',  w.registrar || 'Unknown', '')}
-    ${row('Country',    w.country   || 'Unknown', '')}
+    ${row('Registrar', w.registrar || 'Unknown', '')}
+    ${row('Country', w.country || 'Unknown', '')}
 
     <div class="section-hdr">🔒 SSL Certificate</div>
-    ${row('Valid',   ssl.valid ? '✅ Yes' : '❌ No', ssl.valid ? 'ok' : 'danger')}
-    ${ssl.issuer ? row('Issuer',  ssl.issuer, '') : ''}
+    ${row('Valid', ssl.valid ? '✅ Yes' : '❌ No', ssl.valid ? 'ok' : 'danger')}
+    ${ssl.issuer ? row('Issuer', ssl.issuer, '') : ''}
     ${ssl.expiry ? row('Expires', ssl.expiry, '') : ''}
     ${row('DNS Exists', intel.dns?.exists ? '✅ Yes' : '❌ No', intel.dns?.exists ? 'ok' : 'danger')}
 
     <div class="section-hdr">📄 Page Analysis</div>
-    ${chk('Fake Login Page',           pa.has_fake_login)}
+    ${chk('Fake Login Page', pa.has_fake_login)}
     ${chk(`Brand Impersonation${pa.brand_impersonation ? ': ' + pa.brand_impersonation : ''}`, !!pa.brand_impersonation)}
     ${chk('Credential Harvesting Form', pa.form_steals_credentials)}
-    ${chk('Obfuscated JavaScript',      pa.has_obfuscated_js)}
-    ${chk('Hidden iFrame Detected',     pa.iframe_detected)}
-    ${chk('External Favicon',           pa.external_favicon)}
+    ${chk('Obfuscated JavaScript', pa.has_obfuscated_js)}
+    ${chk('Hidden iFrame Detected', pa.iframe_detected)}
+    ${chk('External Favicon', pa.external_favicon)}
 
     ${signals.length ? `
       <div class="section-hdr">⚠️ Risk Signals</div>
@@ -311,21 +311,21 @@ function chk(label, detected) {
   return `<div class="check"><span>${detected ? '🔴' : '🟢'}</span><span class="${detected ? 'check-detected' : 'check-clean'}">${label}</span></div>`;
 }
 function escapeHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 // ── Community Alerts ───────────────────────────────────────────────────────
 async function fetchAlerts() {
   try {
-    const r    = await fetch(`${BACKEND_URL}/alerts/recent?since=${encodeURIComponent(lastAlertSince)}`);
+    const r = await fetch(`${BACKEND_URL}/alerts/recent?since=${encodeURIComponent(lastAlertSince)}`);
     const data = await r.json();
     if (data.alerts && data.alerts.length > 0) {
-      communityAlerts  = [...data.alerts, ...communityAlerts].slice(0, 20);
-      lastAlertSince   = new Date().toISOString();
+      communityAlerts = [...data.alerts, ...communityAlerts].slice(0, 20);
+      lastAlertSince = new Date().toISOString();
       renderAlerts();
       updateAlertBadge(data.alerts.length);
     }
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function renderAlerts() {
@@ -357,7 +357,7 @@ function renderAlerts() {
 
 function updateAlertBadge(count) {
   const badge = document.getElementById('alert-badge');
-  badge.textContent   = count;
+  badge.textContent = count;
   badge.style.display = count > 0 ? 'inline-flex' : 'none';
 }
 
@@ -365,7 +365,7 @@ function updateAlertBadge(count) {
 function reportPhishing() {
   const btn = document.getElementById('report-btn');
   if (!btn || !currentURL) return;
-  btn.disabled    = true;
+  btn.disabled = true;
   btn.textContent = '⏳ Reporting…';
 
   chrome.runtime.sendMessage(
@@ -375,10 +375,10 @@ function reportPhishing() {
         btn.textContent = '✅ Reported! Community notified.';
         btn.style.color = 'var(--green)';
         btn.style.borderColor = 'rgba(48,209,88,0.3)';
-        btn.style.background  = 'rgba(48,209,88,0.08)';
+        btn.style.background = 'rgba(48,209,88,0.08)';
       } else {
         btn.textContent = '❌ Report failed — backend offline?';
-        btn.disabled    = false;
+        btn.disabled = false;
       }
     }
   );
@@ -392,8 +392,8 @@ chrome.runtime.onMessage.addListener(msg => {
 });
 
 function renderEmailResult(result) {
-  const el     = document.getElementById('email-content');
-  const icons  = { PHISHING: '🚨', SUSPICIOUS: '⚠️', SAFE: '✅' };
+  const el = document.getElementById('email-content');
+  const icons = { PHISHING: '🚨', SUSPICIOUS: '⚠️', SAFE: '✅' };
   const titles = { PHISHING: 'Phishing Email!', SUSPICIOUS: 'Suspicious Email', SAFE: 'Email Looks Safe' };
   const findings = (result.findings || []).slice(0, 4);
   const susLinks = (result.links_analyzed || []).filter(l => l.is_suspicious).slice(0, 3);

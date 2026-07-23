@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: phishguard-backend
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12

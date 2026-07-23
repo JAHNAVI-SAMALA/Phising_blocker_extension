@@ -299,7 +299,7 @@ Open a Gmail email (not just the inbox view). The scanner activates on the open 
 
 ## 📜 License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT License.
 
 ---
 
